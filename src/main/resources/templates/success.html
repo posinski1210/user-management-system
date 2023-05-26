@@ -27,35 +27,9 @@
             </ul>
         </div>
     </nav>
-    <div class="container">
-        <div class="card mb-3">
-            <h1 class="my-highest-header card-header">Login to User Account</h1>
-            <div class=" card card-body">
-                <div>
-                    <div class="alert alert-danger" th:if="${param.error}">
-                        <h2>Invalid Email or Password</h2>
-                    </div>
-                    <form th:action="@{/login}" method="post">
-                        <div class="form-group">
-                            <label for="email" class="form-control-label">Email</label>
-                            <div class="input-group mb-3">
-                                <input type="text" class="form-control" id="email" name="username"/>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="password" class="control-label">Password</label>
-                            <div class="input-group mb-3">
-                                <input type="password" class="form-control password my-password-input" id="password" name="password"/>
-                            </div>
-                        </div>
-                        <input type="submit" value="Submit" class="btn btn-primary"/>
-                    </form>
-                </div>
-            </div>
-        </div>
+    <div class="alert alert-success">
+        <h1 class="my-highest-header">Registration success! Please sign in to continue</h1>
     </div>
-
 </main>
-
 </body>
 </html>

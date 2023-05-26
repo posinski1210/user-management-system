@@ -1,49 +1,71 @@
 package com.ums.entity;
 
 import javax.persistence.*;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "users", uniqueConstraints = {@UniqueConstraint(columnNames = {"email"})})
 public class User {
     @Id
-    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
-
-    @Column(name = "first_name",nullable = false, length = 20)
-    private String firstName;
-    @Column(name ="last_name", nullable = false, length = 20)
-    private String lastName;
-    @Column(name = "email",unique = true,length = 45)
     private String email;
-
-    @Column(name="password",nullable = false,length = 64)
+    private String name;
     private String password;
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.PERSIST)
+    private List<Task> tasksOwned;
 
+    private String username;
 
+    @ManyToMany(cascade = CascadeType.MERGE)
+    @JoinTable(name = "users_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private List<Role> roles;
 
+    public List<Task> getTasksCompleted() {
+        return tasksOwned.stream()
+                .filter(Task::isCompleted)
+                .collect(Collectors.toList());
+    }
 
-    @ManyToMany(fetch = FetchType.EAGER,cascade = CascadeType.ALL)
-    @JoinTable(
-            name = "users_roles",
-            joinColumns = @JoinColumn(name = "user_id",referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id",referencedColumnName = "id"))
-    private Collection<Role> roles;
+    public List<Task> getTasksInProgress() {
+        return tasksOwned.stream()
+                .filter(task -> !task.isCompleted())
+                .collect(Collectors.toList());
+    }
 
-    public User(){
+    public boolean isAdmin() {
+        String roleName = "ADMIN";
+        return roles.stream().map(Role::getRole).anyMatch(roleName::equals);
+    }
+
+    public User() {
+    }
+
+    public User(String email,
+                String name,
+               String password
+                ) {
+        this.email = email;
+        this.name = name;
+        this.password = password;
 
     }
 
-
-    public User(String firstName, String lastName, String email,String password, Collection<Role> roles) {
-        super();
-        this.firstName = firstName;
-        this.lastName = lastName;
+    public User(String email,
+                 String name,
+               String password,
+                List<Task> tasksOwned,
+                List<Role> roles) {
         this.email = email;
+        this.name = name;
         this.password = password;
-        this.roles = Collections.singletonList(new Role("USER"));
+        this.tasksOwned = tasksOwned;
+        this.roles = roles;
     }
 
     public Long getId() {
@@ -54,28 +76,20 @@ public class User {
         this.id = id;
     }
 
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
     public String getEmail() {
         return email;
     }
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getPassword() {
@@ -85,24 +99,37 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
+    public List<Task> getTasksOwned() {
+        return tasksOwned;
+    }
 
-    public Collection<Role> getRoles() {
+    public void setTasksOwned(List<Task> tasksOwned) {
+        this.tasksOwned = tasksOwned;
+    }
+
+    public List<Role> getRoles() {
         return roles;
     }
 
-    public void setRoles(Collection<Role> roles) {
+    public void setRoles(List<Role> roles) {
         this.roles = roles;
     }
 
     @Override
-    public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", email='" + email + '\'' +
-                ", password='" + password + '\'' +
-                ", roles=" + roles +
-                '}';
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(id, user.id) &&
+                email.equals(user.email) &&
+                name.equals(user.name) &&
+                password.equals(user.password) &&
+                Objects.equals(tasksOwned, user.tasksOwned) &&
+                Objects.equals(roles, user.roles);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, email, name, password, tasksOwned, roles);
     }
 }

@@ -3,6 +3,8 @@ package com.ums.entity;
 import javax.persistence.*;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 
 
 @Entity
@@ -10,46 +12,62 @@ import java.util.Collection;
 public class Role {
 
     @Id
-    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false,length = 45)
-    private String name;
-
+    @Column(name = "id")
+    private Integer id;
+    @Column(name = "name")
+    private String role;
     @ManyToMany(mappedBy = "roles")
-    private Collection<User> users;
-
-
+    private List<User> users;
 
     public Role() {
-
     }
 
-    public Role(String name) {
-        super();
-        this.name = name;
+    public Role(String role) {
+        this.role = role;
     }
 
-    public Long getId() {
+    public Role(String role, List<User> users) {
+        this.role = role;
+        this.users = users;
+    }
+
+    public Integer getId() {
         return id;
     }
-    public void setId(Long id) {
+
+    public void setId(Integer id) {
         this.id = id;
     }
-    public String getName() {
-        return name;
+
+    public String getRole() {
+        return role;
     }
-    public void setName(String name) {
-        this.name = name;
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public List<User> getUsers() {
+        return users;
+    }
+
+    public void setUsers(List<User> users) {
+        this.users = users;
     }
 
     @Override
-    public String toString() {
-        return "Role{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", users=" + users +
-                '}';
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Role role1 = (Role) o;
+        return Objects.equals(id, role1.id) &&
+                Objects.equals(role, role1.role) &&
+                Objects.equals(users, role1.users);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, role, users);
     }
 }

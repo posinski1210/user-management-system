@@ -1,102 +1,88 @@
 package com.ums.service.impl;
 
-import com.ums.dto.UserRegistrationDto;
 import com.ums.entity.Role;
 import com.ums.entity.User;
 import com.ums.repository.RoleRepository;
+import com.ums.repository.TaskRepository;
 import com.ums.repository.UserRepository;
 import com.ums.service.UserService;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
+
+
 
 @Service
-public class UserServiceImpl implements UserService {
+public  class UserServiceImpl implements UserService {
+    private static final String ADMIN="ADMIN";
+    private static final String USER="USER";
+
+    private UserRepository userRepository;
+    private TaskRepository taskRepository;
+    private RoleRepository roleRepository;
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
 
 
-    private  final UserRepository userRepository;
-    private final RoleRepository roleRepository;
-
-
-
-
-    private final BCryptPasswordEncoder passwordEncoder;
-
-    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository,BCryptPasswordEncoder passwordEncoder) {
+    @Autowired
+    public UserServiceImpl(UserRepository userRepository,
+                           TaskRepository taskRepository,
+                           RoleRepository roleRepository,
+                           BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.userRepository = userRepository;
+        this.taskRepository = taskRepository;
         this.roleRepository = roleRepository;
-        this.passwordEncoder = passwordEncoder;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
     @Override
-    public List<User> getAllUsers() {
+    public User createUser(User user) {
+        user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+        Role userRole = roleRepository.findByRole(USER);
+        user.setRoles(new ArrayList<>(Collections.singletonList(userRole)));
+        return userRepository.save(user);
+    }
+
+    @Override
+    public User changeRoleToAdmin(User user) {
+        Role adminRole = roleRepository.findByRole(ADMIN);
+        user.setRoles(new ArrayList<>(Collections.singletonList(adminRole)));
+        return userRepository.save(user);
+    }
+
+    @Override
+    public List<User> findAll() {
         return userRepository.findAll();
     }
 
     @Override
-    public User saveUser(User user) {
+    public User getUserByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
 
-        return userRepository.save(user);
+    @Override
+    public boolean isUserEmailPresent(String email) {
+        return userRepository.findByEmail(email) != null;
     }
 
     @Override
     public User getUserById(Long id) {
-        return userRepository.findById(id).get();
+        return userRepository.findById(id).orElse(null);
     }
 
     @Override
-    public User updateUser(User user) {
-        return userRepository.save(user);
+    public void deleteUser(Long id) {
+        User user = userRepository.getOne(id);
+        user.getTasksOwned().forEach(task -> task.setOwner(null));
+        userRepository.delete(user);
     }
 
     @Override
-    public void deleteUserById(Long id) {
-        userRepository.deleteById(id);
+    public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
+        return null;
     }
-
-    @Override
-    public User registerUser(UserRegistrationDto registrationDto) {
-        List<Role> defaultRole = roleRepository.findByName("USER");
-        User user=new User(registrationDto.getFirstName(),
-                registrationDto.getLastName(),
-                registrationDto.getEmail(),
-                passwordEncoder.encode(registrationDto.getPassword()),
-        defaultRole);
-
-
-        return userRepository.save(user);
-    }
-
-
-    @Override
-    @Transactional
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException
-    {
-
-        User user=userRepository.findByEmail(username)
-                .orElseThrow(()-> new UsernameNotFoundException("Invalid Username or password"));
-
-        return new org.springframework.security.core.userdetails.User(
-                user.getEmail(),
-                user.getPassword(),
-                mapRolesToAuthorities(user.getRoles()));
-    }
-
-    private Collection<? extends GrantedAuthority> mapRolesToAuthorities(Collection<Role> roles){
-
-        return roles.stream().map(role -> new SimpleGrantedAuthority(role.getName())).collect(Collectors.toList());
-
-    }
-
-
 }
