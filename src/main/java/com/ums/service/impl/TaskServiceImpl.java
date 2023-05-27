@@ -6,6 +6,7 @@ import com.ums.repository.TaskRepository;
 import com.ums.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,7 +25,7 @@ public class TaskServiceImpl implements TaskService {
         taskRepository.save(task);
     }
 
-    @Override
+    @Transactional
     public void updateTask(Long id, Task updatedTask) {
         Task task = taskRepository.getOne(id);
         task.setName(updatedTask.getName());
@@ -33,7 +34,7 @@ public class TaskServiceImpl implements TaskService {
         taskRepository.save(task);
     }
 
-    @Override
+    @Transactional
     public void deleteTask(Long id) {
         taskRepository.deleteById(id);
     }
@@ -49,6 +50,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @Transactional
     public void setTaskCompleted(Long id) {
         Task task = taskRepository.getOne(id);
         task.setCompleted(true);
@@ -56,6 +58,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @Transactional
     public void setTaskNotCompleted(Long id) {
         Task task = taskRepository.getOne(id);
         task.setCompleted(false);

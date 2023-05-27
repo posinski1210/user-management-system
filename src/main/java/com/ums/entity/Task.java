@@ -1,9 +1,13 @@
 package com.ums.entity;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.Objects;
 
 @Entity
 @Table(name = "task")
@@ -12,27 +16,44 @@ public class Task {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "task_id")
     private Long id;
-
+    @NotEmpty(message = "{task.name.not.empty}")
     private String name;
-
+    @NotEmpty(message = "{task.description.not.empty}")
     private String description;
+    @NotNull(message = "{task.date.not.null}")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate date;
     private boolean isCompleted;
     private String creatorName;
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "owner_id")
     private User owner;
 
-    public long daysLeftUntilDeadline(LocalDate date){
-        return ChronoUnit.DAYS.between(LocalDate.now(),date);
+    public long daysLeftUntilDeadline(LocalDate date) {
+        return ChronoUnit.DAYS.between(LocalDate.now(), date);
     }
 
     public Task() {
     }
 
-    public Task(Long id, String name, String description, LocalDate date, boolean isCompleted, String creatorName, User owner) {
-        this.id = id;
+    public Task(@NotEmpty String name,
+                @NotEmpty @Size(max = 1200) String description,
+                @NotNull LocalDate date,
+                boolean isCompleted,
+                String creatorName) {
+        this.name = name;
+        this.description = description;
+        this.date = date;
+        this.isCompleted = isCompleted;
+        this.creatorName = creatorName;
+    }
+
+    public Task(@NotEmpty String name,
+                @NotEmpty @Size(max = 1200) String description,
+                @NotNull LocalDate date,
+                boolean isCompleted,
+                String creatorName,
+                User owner) {
         this.name = name;
         this.description = description;
         this.date = date;
@@ -98,20 +119,12 @@ public class Task {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if(this == obj) return true;
-        if(obj==null || getClass() != obj.getClass()) return false;
-        Task task = (Task) obj;
-        return isCompleted == task.isCompleted &&
-                Objects.equals(id,task.id) &&
-                name.equals(task.name) &&
-                description.equals(task.description) &&
-                date.equals(task.date) &&
-                Objects.equals(creatorName,task.creatorName) &&
-                Objects.equals(owner,task.owner);
+    public int hashCode() {
+        return super.hashCode();
     }
 
     @Override
-    public int hashCode() {
-return Objects.hash(id,name,description,date,isCompleted,creatorName,owner);    }
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
 }

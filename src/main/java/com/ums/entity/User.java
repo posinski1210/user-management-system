@@ -1,8 +1,11 @@
 package com.ums.entity;
 
+import org.hibernate.Hibernate;
+
 import javax.persistence.*;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Entity
@@ -12,15 +15,18 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
+    @Column(name="email")
     private String email;
+    @Column(name = "name")
     private String name;
+    @Column(name="password")
     private String password;
-    @OneToMany(mappedBy = "owner", cascade = CascadeType.PERSIST)
-    private List<Task> tasksOwned;
+    @OneToMany(fetch =FetchType.EAGER,mappedBy = "owner")
+    private Set<Task> tasksOwned;
 
     private String username;
 
-    @ManyToMany(cascade = CascadeType.MERGE)
+    @ManyToMany(cascade = CascadeType.MERGE,fetch = FetchType.EAGER)
     @JoinTable(name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
@@ -39,7 +45,8 @@ public class User {
     }
 
     public boolean isAdmin() {
-        String roleName = "ADMIN";
+        Hibernate.initialize(roles);
+        String roleName = "ROLE_ADMIN";
         return roles.stream().map(Role::getRole).anyMatch(roleName::equals);
     }
 
@@ -59,7 +66,7 @@ public class User {
     public User(String email,
                  String name,
                String password,
-                List<Task> tasksOwned,
+                Set<Task> tasksOwned,
                 List<Role> roles) {
         this.email = email;
         this.name = name;
@@ -99,11 +106,11 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
-    public List<Task> getTasksOwned() {
+    public Set<Task> getTasksOwned() {
         return tasksOwned;
     }
 
-    public void setTasksOwned(List<Task> tasksOwned) {
+    public void setTasksOwned(Set<Task> tasksOwned) {
         this.tasksOwned = tasksOwned;
     }
 
@@ -115,21 +122,16 @@ public class User {
         this.roles = roles;
     }
 
+
+
+
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o;
-        return Objects.equals(id, user.id) &&
-                email.equals(user.email) &&
-                name.equals(user.name) &&
-                password.equals(user.password) &&
-                Objects.equals(tasksOwned, user.tasksOwned) &&
-                Objects.equals(roles, user.roles);
+    public boolean equals(Object obj) {
+        return super.equals(obj);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, email, name, password, tasksOwned, roles);
+        return super.hashCode();
     }
 }

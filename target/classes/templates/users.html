@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
 <head>
     <meta charset="UTF-8">
     <title>Assign Tasks</title>
@@ -12,26 +14,26 @@
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
             <span class="navbar-toggler-icon"></span>
         </button>
-        <a class="navbar-brand" href="#" th:href="@{/}">User Management System</a>
+        <a class="navbar-brand" href="#">User Management System</a>
         <div class="collapse navbar-collapse" id="collapsibleNavbar">
             <ul class="navbar-nav" style="display: flex">
                 <li class="nav-item">
                     <a class="nav-link">Home</a>
                 </li>
                 <li class="nav-item" sec:authorize="isAuthenticated()">
-                    <a class="nav-link" th:href="/tasks">Tasks List</a>
+                    <a class="nav-link" th:href="@{/tasks}">Tasks List</a>
                 </li>
                 <li class="nav-item" sec:authorize="hasRole('ROLE_ADMIN')">
-                    <a class="nav-link" th:href="/assignment">Assign Tasks</a>
+                    <a class="nav-link" th:href="@{/assignment}">Assign Tasks</a>
                 </li>
                 <li class="nav-item" sec:authorize="isAuthenticated()">
-                    <a class="nav-link" th:href="/task/create">Create New Task</a>
+                    <a class="nav-link" th:href="@{/task/create}">Create New Task</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" th:href="/users" sec:authorize="isAuthenticated()">Users List</a>
+                    <a class="nav-link" th:href="@{/users}" sec:authorize="isAuthenticated()">Users List</a>
                 </li>
                 <li class="nav-item" sec:authorize="isAuthenticated()">
-                    <a class="nav-link" th:href="/profile">Your Profile</a>
+                    <a class="nav-link" th:href="@{/profile}">Your Profile</a>
                 </li>
                 <li>
                     <form class="form-inline my-2 my-lg-0" th:action="@{logout}" method="post"
@@ -60,20 +62,20 @@
                 </thead>
 
                 <tbody>
-                <tr th:each="user:${users}">
+                <tr th:each="user : ${users}">
                     <td th:text="${user.email}" class="d-none d-lg-table-cell"></td>
                     <td th:if="${user.getTasksInProgress().size() gt 0}">
                         <ol class="pl-3">
-                            <li th:each="${user.getTasksInProgress().size() }">
+                            <li th:each="t : ${user.getTasksInProgress()}">
                                 <span th:text="${t.name}"></span>
                                 <th:block th:include="days-left-until-deadline :: daysLeft(${t})"></th:block>
                             </li>
                         </ol>
                     </td>
                     <td th:if="${user.getTasksInProgress().size()==0}">0</td>
-                    <td th:if="${user.getTasksCompleted().size() gt 0}" class="d-none d-md-table-cell">
+                    <td th:if="${#lists.size(user.tasksCompleted) > 0}" class="d-none d-md-table-cell">
                         <ol class="pl-3">
-                            <li th:each="t : ${user.getTasksCompleted()}">
+                            <li th:each="t : ${user.tasksCompleted}">
                                 <span th:text="${t.name}"></span>
                             </li>
                         </ol>
@@ -82,7 +84,7 @@
 
                     <td th:if="${isAdminSigned and !user.isAdmin()}">
                         <a data-toggle="modal" data-target="#modal-soft-delete"
-                           th:attr="data-target='#modal-soft-delete'+${user.id}"
+                           th:attr="data-target='#modal-soft-delete' + ${user.getId()}"
                            th:href="${'user/delete/' + user.id}"
                            class="btn btn-outline-danger btn-sm">Delete
                         </a>

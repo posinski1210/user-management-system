@@ -16,26 +16,23 @@ import javax.sql.DataSource;
 @EnableWebSecurity
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final DataSource dataSource;
-
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Autowired
-    public SecurityConfiguration(DataSource dataSource) {
+    public SecurityConfiguration(DataSource dataSource,BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.dataSource = dataSource;
+        this.bCryptPasswordEncoder=  bCryptPasswordEncoder;
     }
 
-    @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth
                 .jdbcAuthentication()
-                .usersByUsernameQuery("SELECT email AS username, password, true FROM \"user\" WHERE email=?")
-                .authoritiesByUsernameQuery("SELECT u.email AS username, r.role AS authority FROM \"user\" u INNER JOIN user_role ur ON (u.user_id = ur.user_id) INNER JOIN role r ON (ur.role_id = r.role_id) WHERE u.email=?")
+                .usersByUsernameQuery("SELECT email AS username, password, true FROM \"users\" WHERE email=?")
+                .authoritiesByUsernameQuery("SELECT u.email AS username, r.name AS authority FROM \"users\" u INNER JOIN users_roles ur ON (u.id = ur.user_id) INNER JOIN roles r ON (ur.role_id = r.id) WHERE u.email=?")
                 .dataSource(dataSource)
-                .passwordEncoder(passwordEncoder());
+                .passwordEncoder(bCryptPasswordEncoder);
     }
 
 
@@ -44,8 +41,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         http
                 .csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/register", "/", "/login", "/about", "/css/**", "/webjars/**").permitAll()
-                .antMatchers("/profile/**", "/tasks/**", "/task/**", "/users", "/user/**", "/h2-console/**").hasAnyRole("USER", "ADMIN")
+                .antMatchers("/register", "/", "/login","/css/**", "/webjars/**").permitAll()
+                .antMatchers("/profile/**", "/tasks/**", "/task/**", "/users", "/user/**").hasAnyRole("USER", "ADMIN")
                 .antMatchers("/assignment/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
                 .and()

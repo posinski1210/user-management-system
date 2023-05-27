@@ -9,6 +9,7 @@ import org.springframework.security.web.servletapi.SecurityContextHolderAwareReq
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -41,7 +42,7 @@ public class TaskController {
         return "/tasks";
     }
 
-    @GetMapping("/tasks/create")
+    @GetMapping("/task/create")
     public String showEmptyTaskForm(Model model,Principal principal, SecurityContextHolderAwareRequestWrapper request){
         String email = principal.getName();
         User user = userService.getUserByEmail(email);
@@ -61,7 +62,7 @@ public class TaskController {
             return "task-new";
         }
         taskService.createTask(task);
-        return "tasks";
+        return "redirect:/tasks";
     }
 
     @GetMapping("/task/edit/{id}")
@@ -78,21 +79,21 @@ public class TaskController {
         taskService.updateTask(id,task);
         return "redirect:/tasks";
     }
-    @GetMapping("/task/delete/{id}")
-    public String deleteTask(@PathVariable Long id){
+    @PostMapping("/task/delete/{id}")
+    public String deleteTask(@PathVariable("id") Long id){
         taskService.deleteTask(id);
         return "redirect:/tasks";
     }
 
-    @GetMapping("/task/mark-done/{id}")
+    @PostMapping("/profile/mark-done/{id}")
     public  String setTaskCompleted(@PathVariable Long id){
         taskService.setTaskCompleted(id);
-        return "redirect:/tasks";
+        return "redirect:/profile";
     }
-    @GetMapping("/task/unmark-done/{id}")
+    @PostMapping("/profile/unmark-done/{id}")
     public  String setTaskNotCompleted(@PathVariable Long id){
         taskService.setTaskNotCompleted(id);
-        return "redirect:/tasks";
+        return "redirect:/profile";
     }
 
 

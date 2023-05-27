@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<html lang="en" xmlns:th="http://www.thymeleaf.org"  xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>Tasks List</title>
@@ -12,26 +12,32 @@
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
             <span class="navbar-toggler-icon"></span>
         </button>
-        <a class="navbar-brand" href="#" th:href="@{/}">User Management System</a>
+        <a class="navbar-brand" href="#">User Management System</a>
         <div class="collapse navbar-collapse" id="collapsibleNavbar">
             <ul class="navbar-nav" style="display: flex">
                 <li class="nav-item">
                     <a class="nav-link">Home</a>
                 </li>
-                <li class="nav-item" sec:authorize="isAuthenticated()">
-                    <a class="nav-link" th:href="/tasks">Tasks List</a>
-                </li>
-                <li class="nav-item" sec:authorize="hasRole('ROLE_ADMIN')">
-                    <a class="nav-link" th:href="/assignment">Assign Tasks</a>
-                </li>
-                <li class="nav-item" sec:authorize="isAuthenticated()">
-                    <a class="nav-link" th:href="/task/create">Create New Task</a>
+                <li class="nav-item">
+                    <a class="nav-link" href="/register" sec:authorize="!isAuthenticated()">Register</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" th:href="/users" sec:authorize="isAuthenticated()">Users List</a>
+                    <a class="nav-link" href="/login" sec:authorize="!isAuthenticated()">Login</a>
                 </li>
                 <li class="nav-item" sec:authorize="isAuthenticated()">
-                    <a class="nav-link" th:href="/profile">Your Profile</a>
+                    <a class="nav-link" th:href="@{/tasks}">Tasks List</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('ROLE_ADMIN')">
+                    <a class="nav-link" th:href="@{/assignment}">Assign Tasks</a>
+                </li>
+                <li class="nav-item" sec:authorize="isAuthenticated()">
+                    <a class="nav-link" th:href="@{/task/create}">Create New Task</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/users}" sec:authorize="isAuthenticated()">Users List</a>
+                </li>
+                <li class="nav-item" sec:authorize="isAuthenticated()">
+                    <a class="nav-link" th:href="@{/profile}">Your Profile</a>
                 </li>
                 <li>
                     <form class="form-inline my-2 my-lg-0" th:action="@{logout}" method="post"
